@@ -25,10 +25,10 @@ const makeIcon = (emoji, bg, size = 36) => L.divIcon({
     popupAnchor: [0, -(size / 2)]
 });
 
-const userIcon     = makeIcon('📍', '#3B82F6', 38);
-const vetIcon      = makeIcon('🏥', '#10B981', 40);
-const eventIcon    = makeIcon('🎪', '#8B5CF6', 40);
-const lostPetIcon  = makeIcon('🚨', '#EF4444', 36);
+const userIcon = makeIcon('📍', '#3B82F6', 38);
+const vetIcon = makeIcon('🏥', '#10B981', 40);
+const eventIcon = makeIcon('🎪', '#8B5CF6', 40);
+const lostPetIcon = makeIcon('🚨', '#EF4444', 36);
 const friendlyIcon = makeIcon('🐾', '#F59E0B', 32);
 
 // ─── Fly to location ────────────────────────────────────────
@@ -42,82 +42,342 @@ function FlyToLocation({ position }) {
 
 // ─── Nearby Vet Centres (static realistic data, offset from user) ─
 const VET_CENTRES = [
-    { name: 'PawCare Veterinary Clinic',    phone: '+91 98765 43210', hours: 'Mon–Sat 9am–8pm', services: ['Vaccination','Surgery','Dental'], rating: 4.8, latOff: 0.012, lngOff: 0.018 },
-    { name: 'City Pet Hospital',             phone: '+91 91234 56789', hours: 'Open 24/7',        services: ['Emergency','X-Ray','Grooming'], rating: 4.6, latOff: -0.015, lngOff: 0.010 },
-    { name: 'Happy Paws Animal Clinic',      phone: '+91 87654 32109', hours: 'Mon–Sun 8am–9pm', services: ['Check-up','Boarding'],           rating: 4.7, latOff: 0.020, lngOff: -0.014 },
-    { name: 'Dr. Mehta\'s Pet Care',         phone: '+91 76543 21098', hours: 'Mon–Fri 10am–7pm',services: ['Consultation','Deworming'],      rating: 4.5, latOff: -0.008, lngOff: -0.022 },
+    { name: 'PawCare Veterinary Clinic', phone: '+91 98765 43210', hours: 'Mon–Sat 9am–8pm', services: ['Vaccination', 'Surgery', 'Dental'], rating: 4.8, latOff: 0.012, lngOff: 0.018 },
+    { name: 'City Pet Hospital', phone: '+91 91234 56789', hours: 'Open 24/7', services: ['Emergency', 'X-Ray', 'Grooming'], rating: 4.6, latOff: -0.015, lngOff: 0.010 },
+    { name: 'Happy Paws Animal Clinic', phone: '+91 87654 32109', hours: 'Mon–Sun 8am–9pm', services: ['Check-up', 'Boarding'], rating: 4.7, latOff: 0.020, lngOff: -0.014 },
+    { name: 'Dr. Mehta\'s Pet Care', phone: '+91 76543 21098', hours: 'Mon–Fri 10am–7pm', services: ['Consultation', 'Deworming'], rating: 4.5, latOff: -0.008, lngOff: -0.022 },
 ];
 
 // ─── Nearby Pet Events ───────────────────────────────────────
 const PET_EVENTS = [
-    { name: 'PawFest 2026 — City Pet Fair',     date: 'Apr 12, 2026',  time: '10am – 6pm', venue: 'Central Park Grounds',  desc: 'Largest pet fair with adoption stalls, dog shows, grooming demos, and vet check-ups!', type: 'Fair',       latOff: 0.025, lngOff: 0.005  },
-    { name: 'Puppy Socialization Workshop',      date: 'Apr 18, 2026',  time: '11am – 1pm', venue: 'Paws & Play Center',   desc: 'Free workshop for puppies under 6 months to socialize and learn basic commands.',    type: 'Workshop',   latOff: -0.020, lngOff: 0.022 },
-    { name: 'Community Pet Adoption Drive',      date: 'Apr 25, 2026',  time: '9am – 5pm',  venue: 'Town Hall Lawn',       desc: 'Adopt rescued animals, free vaccination for newly adopted pets on the day.',          type: 'Adoption',   latOff: 0.010, lngOff: -0.025 },
-    { name: 'Exotic Birds & Bunny Exhibition',   date: 'May 3, 2026',   time: '12pm – 7pm', venue: 'Exhibition Hall No. 4', desc: 'Rare bird species, angora rabbits, and exotic pets on display. Family-friendly event.', type: 'Exhibition', latOff: -0.028, lngOff: -0.008 },
+    { name: 'PawFest 2026 — City Pet Fair', date: 'Apr 12, 2026', time: '10am – 6pm', venue: 'Central Park Grounds', desc: 'Largest pet fair with adoption stalls, dog shows, grooming demos, and vet check-ups!', type: 'Fair', latOff: 0.025, lngOff: 0.005 },
+    { name: 'Puppy Socialization Workshop', date: 'Apr 18, 2026', time: '11am – 1pm', venue: 'Paws & Play Center', desc: 'Free workshop for puppies under 6 months to socialize and learn basic commands.', type: 'Workshop', latOff: -0.020, lngOff: 0.022 },
+    { name: 'Community Pet Adoption Drive', date: 'Apr 25, 2026', time: '9am – 5pm', venue: 'Town Hall Lawn', desc: 'Adopt rescued animals, free vaccination for newly adopted pets on the day.', type: 'Adoption', latOff: 0.010, lngOff: -0.025 },
+    { name: 'Exotic Birds & Bunny Exhibition', date: 'May 3, 2026', time: '12pm – 7pm', venue: 'Exhibition Hall No. 4', desc: 'Rare bird species, angora rabbits, and exotic pets on display. Family-friendly event.', type: 'Exhibition', latOff: -0.028, lngOff: -0.008 },
 ];
 
 // ─── Detail Popup Panel ──────────────────────────────────────
 const DetailPanel = ({ item, type, onClose }) => {
     if (!item) return null;
-    const isVet   = type === 'vet';
+
+    const isVet = type === 'vet';
     const isEvent = type === 'event';
 
     return (
-        <div style={{
-            position: 'absolute', bottom: '16px', left: '16px', right: '16px',
-            zIndex: 2000,
-            background: 'rgba(26,26,46,0.97)',
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${isVet ? 'rgba(16,185,129,0.4)' : isEvent ? 'rgba(139,92,246,0.4)' : 'rgba(239,68,68,0.4)'}`,
-            borderRadius: '20px',
-            padding: '1.2rem 1.5rem',
-            boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
-            animation: 'fadeInUp 0.3s ease',
-            maxWidth: '600px',
-            margin: '0 auto'
-        }}>
+        <div
+            style={{
+                position: 'absolute',
+                bottom: '16px',
+                left: '16px',
+                right: '16px',
+                zIndex: 2000,
+
+                background:
+                    'linear-gradient(135deg, rgba(22,22,40,0.98), rgba(35,35,60,0.96))',
+
+                backdropFilter: 'blur(18px)',
+
+                border: `1px solid ${isVet
+                    ? 'rgba(16,185,129,0.35)'
+                    : isEvent
+                        ? 'rgba(139,92,246,0.35)'
+                        : 'rgba(239,68,68,0.35)'
+                    }`,
+
+                borderRadius: '24px',
+
+                padding: '1.4rem',
+
+                boxShadow:
+                    '0 18px 50px rgba(0,0,0,0.45)',
+
+                animation: 'fadeInUp 0.3s ease',
+
+                maxWidth: '620px',
+
+                margin: '0 auto',
+
+                color: '#ffffff'
+            }}
+        >
+            {/* CLOSE BUTTON */}
             <button
                 onClick={onClose}
-                style={{ position: 'absolute', top: '0.8rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'rgba(0,0,0,0.6)' }}
-            >✕</button>
+                style={{
+                    position: 'absolute',
+                    top: '14px',
+                    right: '16px',
 
+                    background: 'transparent',
+                    border: 'none',
+
+                    cursor: 'pointer',
+
+                    fontSize: '1.2rem',
+
+                    color: 'rgba(255,255,255,0.7)',
+
+                    transition: '0.2s ease'
+                }}
+            >
+                ✕
+            </button>
+
+            {/* VET DETAILS */}
             {isVet && (
                 <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
-                        <span style={{ fontSize: '1.5rem' }}>🏥</span>
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.8rem',
+                            marginBottom: '1rem'
+                        }}
+                    >
+                        <span style={{ fontSize: '1.8rem' }}>
+                            🏥
+                        </span>
+
                         <div>
-                            <div style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.1rem', color: '#10B981' }}>{item.name}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.5)' }}>⭐ {item.rating} · {item.hours}</div>
+                            <div
+                                style={{
+                                    fontFamily:
+                                        "'Fredoka One', cursive",
+
+                                    fontSize: '1.2rem',
+
+                                    color: '#10B981',
+
+                                    marginBottom: '0.2rem'
+                                }}
+                            >
+                                {item.name}
+                            </div>
+
+                            <div
+                                style={{
+                                    fontSize: '0.82rem',
+
+                                    color:
+                                        'rgba(255,255,255,0.72)'
+                                }}
+                            >
+                                ⭐ {item.rating} · {item.hours}
+                            </div>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.6rem' }}>
-                        {item.services.map((s, i) => (
-                            <span key={i} style={{ padding: '0.2rem 0.6rem', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 700, color: '#10B981' }}>{s}</span>
+
+                    {/* SERVICES */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '0.5rem',
+                            marginBottom: '1rem'
+                        }}
+                    >
+                        {item.services.map((service, i) => (
+                            <span
+                                key={i}
+                                style={{
+                                    padding:
+                                        '0.35rem 0.8rem',
+
+                                    background:
+                                        'rgba(16,185,129,0.15)',
+
+                                    border:
+                                        '1px solid rgba(16,185,129,0.3)',
+
+                                    borderRadius: '999px',
+
+                                    fontSize: '0.74rem',
+
+                                    fontWeight: 700,
+
+                                    color: '#10B981'
+                                }}
+                            >
+                                {service}
+                            </span>
                         ))}
                     </div>
-                    <div style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.7)' }}>📞 {item.phone}</div>
-                    <button className="btn-primary" style={{ marginTop: '0.8rem', padding: '0.5rem 1.2rem', fontSize: '0.85rem' }}
-                        onClick={() => window.open(`tel:${item.phone.replace(/\s/g, '')}`)}>
+
+                    {/* PHONE */}
+                    <div
+                        style={{
+                            fontSize: '0.92rem',
+
+                            color: 'rgba(255,255,255,0.9)',
+
+                            marginBottom: '1rem'
+                        }}
+                    >
+                        📞 {item.phone}
+                    </div>
+
+                    {/* BUTTON */}
+                    <button
+                        onClick={() =>
+                            window.open(
+                                `tel:${item.phone.replace(
+                                    /\s/g,
+                                    ''
+                                )}`
+                            )
+                        }
+                        style={{
+                            padding: '0.7rem 1.4rem',
+
+                            border: 'none',
+
+                            borderRadius: '14px',
+
+                            background:
+                                'linear-gradient(135deg,#10B981,#34D399)',
+
+                            color: '#ffffff',
+
+                            fontWeight: 700,
+
+                            cursor: 'pointer',
+
+                            fontSize: '0.88rem',
+
+                            boxShadow:
+                                '0 8px 20px rgba(16,185,129,0.3)'
+                        }}
+                    >
                         📞 Call Now
                     </button>
                 </>
             )}
 
+            {/* EVENT DETAILS */}
             {isEvent && (
                 <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
-                        <span style={{ fontSize: '1.5rem' }}>🎪</span>
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.8rem',
+                            marginBottom: '1rem'
+                        }}
+                    >
+                        <span style={{ fontSize: '1.8rem' }}>
+                            🎪
+                        </span>
+
                         <div>
-                            <div style={{ fontFamily: "'Fredoka One', cursive", fontSize: '1.05rem', color: '#A78BFA' }}>{item.name}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'rgba(0,0,0,0.5)' }}>
+                            <div
+                                style={{
+                                    fontFamily:
+                                        "'Fredoka One', cursive",
+
+                                    fontSize: '1.15rem',
+
+                                    color: '#A78BFA',
+
+                                    marginBottom: '0.2rem'
+                                }}
+                            >
+                                {item.name}
+                            </div>
+
+                            <div
+                                style={{
+                                    fontSize: '0.8rem',
+
+                                    color:
+                                        'rgba(255,255,255,0.72)'
+                                }}
+                            >
                                 📅 {item.date} · ⏰ {item.time}
                             </div>
                         </div>
                     </div>
-                    <span style={{ padding: '0.2rem 0.7rem', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: '999px', fontSize: '0.72rem', fontWeight: 700, color: '#A78BFA', marginBottom: '0.5rem', display: 'inline-block' }}>{item.type}</span>
-                    <p style={{ fontSize: '0.85rem', color: 'rgba(0,0,0,0.7)', margin: '0.4rem 0' }}>{item.desc}</p>
-                    <div style={{ fontSize: '0.82rem', color: 'rgba(0,0,0,0.5)' }}>📍 {item.venue}</div>
-                    <button style={{ marginTop: '0.8rem', padding: '0.5rem 1.2rem', fontSize: '0.85rem', background: 'linear-gradient(135deg,#8B5CF6,#A78BFA)', border: 'none', borderRadius: '10px', color: '#000000', fontWeight: 700, cursor: 'pointer', fontFamily: "'Nunito',sans-serif" }}>
+
+                    {/* EVENT TYPE */}
+                    <span
+                        style={{
+                            padding: '0.3rem 0.8rem',
+
+                            background:
+                                'rgba(139,92,246,0.15)',
+
+                            border:
+                                '1px solid rgba(139,92,246,0.3)',
+
+                            borderRadius: '999px',
+
+                            fontSize: '0.74rem',
+
+                            fontWeight: 700,
+
+                            color: '#C4B5FD',
+
+                            display: 'inline-block',
+
+                            marginBottom: '1rem'
+                        }}
+                    >
+                        {item.type}
+                    </span>
+
+                    {/* DESCRIPTION */}
+                    <p
+                        style={{
+                            fontSize: '0.92rem',
+
+                            lineHeight: 1.7,
+
+                            color:
+                                'rgba(255,255,255,0.88)',
+
+                            marginBottom: '0.9rem'
+                        }}
+                    >
+                        {item.desc}
+                    </p>
+
+                    {/* LOCATION */}
+                    <div
+                        style={{
+                            fontSize: '0.85rem',
+
+                            color:
+                                'rgba(255,255,255,0.72)',
+
+                            marginBottom: '1rem'
+                        }}
+                    >
+                        📍 {item.venue}
+                    </div>
+
+                    {/* BUTTON */}
+                    <button
+                        style={{
+                            padding: '0.75rem 1.4rem',
+
+                            border: 'none',
+
+                            borderRadius: '14px',
+
+                            background:
+                                'linear-gradient(135deg,#8B5CF6,#A78BFA)',
+
+                            color: '#ffffff',
+
+                            fontWeight: 700,
+
+                            cursor: 'pointer',
+
+                            fontSize: '0.88rem',
+
+                            boxShadow:
+                                '0 8px 22px rgba(139,92,246,0.35)'
+                        }}
+                    >
                         🎟️ Register Interest
                     </button>
                 </>
@@ -129,21 +389,21 @@ const DetailPanel = ({ item, type, onClose }) => {
 // ─── Legend ──────────────────────────────────────────────────
 const MapLegend = ({ activeFilters, toggleFilter }) => {
     const items = [
-        { key: 'user',    emoji: '📍', label: 'You',         color: '#3B82F6' },
-        { key: 'vet',     emoji: '🏥', label: 'Vet Centres', color: '#10B981' },
-        { key: 'event',   emoji: '🎪', label: 'Pet Events',  color: '#8B5CF6' },
-        { key: 'lost',    emoji: '🚨', label: 'Lost Pets',   color: '#EF4444' },
-        { key: 'friendly',emoji: '🐾', label: 'Community',   color: '#F59E0B' },
+        { key: 'user', emoji: '📍', label: 'You', color: '#3B82F6' },
+        { key: 'vet', emoji: '🏥', label: 'Vet Centres', color: '#10B981' },
+        { key: 'event', emoji: '🎪', label: 'Pet Events', color: '#8B5CF6' },
+        { key: 'lost', emoji: '🚨', label: 'Lost Pets', color: '#EF4444' },
+        { key: 'friendly', emoji: '🐾', label: 'Community', color: '#F59E0B' },
     ];
     return (
         <div style={{
             position: 'absolute', top: '12px', right: '12px', zIndex: 1001,
-            background: 'rgba(26,26,46,0.92)', backdropFilter: 'blur(12px)',
+            background: 'rgba(255, 255, 255, 0.3)', backdropFilter: 'blur(100px)',
             border: '1px solid rgba(255,255,255,0.1)', borderRadius: '14px',
             padding: '0.7rem 0.9rem', display: 'flex', flexDirection: 'column', gap: '0.4rem',
             minWidth: '140px'
         }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'rgba(0,0,0,0.5)', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Layers</div>
+            <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#000000', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Layers</div>
             {items.map(({ key, emoji, label, color }) => (
                 <div
                     key={key}
@@ -231,8 +491,8 @@ const MapComponent = ({ petsNearby = [] }) => {
             {locationError && (
                 <div style={{
                     position: 'absolute', top: '0.8rem', left: '50%', transform: 'translateX(-50%)',
-                    zIndex: 1000, background: 'rgba(0,0,0,0.75)',
-                    color: 'rgba(0,0,0,0.85)',
+                    zIndex: 1000, background: 'rgba(255, 255, 255, 0.75)',
+                    color: 'rgba(0,0,0,1)',
                     padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.8rem',
                     whiteSpace: 'nowrap', maxWidth: '90%', textAlign: 'center'
                 }}>
