@@ -1,4 +1,10 @@
 import React, { useState } from 'react';
+import {
+    addDoc,
+    collection
+} from "firebase/firestore";
+
+import { db } from "../firebase";
 import { Heart, CheckCircle, MapPin, Calendar } from 'lucide-react';
 
 const petImages = {
@@ -10,16 +16,32 @@ const PetCard = ({ name, type, age, image }) => {
     const [adopted, setAdopted] = useState(false);
     const [liked, setLiked] = useState(false);
 
-    const handleAdopt = () => {
-        const username = localStorage.getItem('username');
-        if (username) {
-            fetch('http://localhost:5000/adoptions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, petName: name, petType: type })
-            }).catch(console.error);
+    const handleAdopt = async () => {
+
+        try {
+
+            await addDoc(
+                collection(db, "adoptions"),
+                {
+                    petName: name,
+                    petType: type,
+                    username:
+                        localStorage.getItem("username"),
+                    date:
+                        new Date().toLocaleDateString()
+                }
+            );
+
+            setAdopted(true);
+
+            alert("🐾 Adoption successful!");
+
+        } catch (error) {
+
+            alert(error.message);
+
         }
-        setAdopted(true);
+
     };
 
     if (adopted) {

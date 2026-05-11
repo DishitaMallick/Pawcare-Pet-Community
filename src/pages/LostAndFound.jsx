@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import {
+    collection,
+    addDoc,
+    getDocs,
+    deleteDoc,
+    doc
+} from "firebase/firestore";
+
+import { db } from "../firebase";
 import FormInput from '../components/FormInput';
 import { MapPin, Phone, AlertCircle } from 'lucide-react';
 
@@ -13,24 +21,77 @@ const LostAndFound = () => {
         fetchLostPets();
     }, []);
 
-    const fetchLostPets = () => {
-        axios.get('http://localhost:5000/lost')
-            .then(res => setLostPets(res.data))
-            .catch(err => console.error(err));
-    };
+    const fetchLostPets = async () => {
 
-    const handleSubmit = (e) => {
+        try {
+
+            const querySnapshot =
+                await getDocs(collection(db, "lostfound"));
+
+            const pets = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            setLostPets(pets);
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
+    };
+    const handleSubmit = async (e) => {
+
         e.preventDefault();
-        const username = localStorage.getItem('username');
-        axios.post('http://localhost:5000/lost', { ...formData, username })
-            .then(() => {
-                fetchLostPets();
-                setFormData({ petName: '', location: '', contact: '' });
-                alert('Reported successfully!');
-            })
-            .catch(err => console.error(err));
-    };
 
+        try {
+
+            const username =
+                localStorage.getItem("username");
+
+            await addDoc(collection(db, "lostfound"), {
+                ...formData,
+                username: localStorage.getItem("username"),
+                createdAt: new Date()
+            });
+
+            fetchLostPets();
+
+            setFormData({
+                petName: "",
+                location: "",
+                contact: ""
+            });
+
+            alert("🐾 Report submitted successfully!");
+
+        } catch (error) {
+
+            console.error(error);
+            alert(error.message);
+
+        }
+
+    };
+    const handleFound = async (id) => {
+
+        try {
+
+            await deleteDoc(doc(db, "lostfound", id));
+
+            fetchLostPets();
+
+            alert("🐾 Pet marked as found!");
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
+    };
     return (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'start' }}>
             <div className="glass-card" style={{ padding: '2.5rem' }}>
@@ -78,8 +139,12 @@ const LostAndFound = () => {
                                 <span style={{ fontSize: '0.8rem', color: 'var(--secondary)', display: 'block', marginBottom: '0.5rem' }}>
                                     <Phone size={14} style={{ marginRight: '4px' }} /> {pet.contact}
                                 </span>
-                                <button className="btn-primary" onClick={() => navigate(`/found/${pet.id || Math.random()}`, { state: { pet } })} style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>I found it!</button>
-                            </div>
+                                <button
+                                    className="btn-primary"
+                                    onClick={() => handleFound(pet.id)}
+                                >
+                                    I found it!
+                                </button>                            </div>
                         </div>
                     ))
                 )}

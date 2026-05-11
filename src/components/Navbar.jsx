@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, Dog, MapPin, Calendar, MessageSquare, Briefcase, Sun, Moon, Search, User } from 'lucide-react';
-
+import {
+    Home,
+    Dog,
+    MapPin,
+    Calendar,
+    MessageSquare,
+    Briefcase,
+    Sun,
+    Moon,
+    Search,
+    User,
+    AlertTriangle
+} from 'lucide-react';
 const PawLogo = () => (
     <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
         {/* Main paw pad */}
@@ -30,7 +41,7 @@ const navItems = [
     { to: '/map', icon: MapPin, label: 'Map' },
     { to: '/services', icon: Briefcase, label: 'Services' },
     { to: '/chatbot', icon: MessageSquare, label: 'PawBot' },
-];
+    { to: '/accidents', icon: AlertTriangle, label: 'Emergency' },];
 
 const Navbar = () => {
     const navigate = useNavigate();

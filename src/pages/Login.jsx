@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword
+} from "firebase/auth";
+
+import { auth } from "../firebase";
 import FormInput from '../components/FormInput';
 import { motion } from 'framer-motion';
 
@@ -7,25 +12,41 @@ const Login = () => {
     const [isSignup, setIsSignup] = useState(false);
     const [formData, setFormData] = useState({ username: '', password: '', phone: '' });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const url = isSignup ? 'http://localhost:5000/register' : 'http://localhost:5000/login';
-        axios.post(url, formData)
-            .then(res => {
-                if (!isSignup) {
-                    localStorage.setItem('token', res.data.token);
-                    localStorage.setItem('username', res.data.user?.username || formData.username);
-                    alert('🐾 Welcome back to PawCare!');
-                    window.location.href = '/';
-                } else {
-                    alert('🎉 You\'re in! Please log in to your new PawCare account.');
-                    setIsSignup(false);
-                }
-            })
-            .catch(err => {
-                const errorMessage = err.response?.data?.error || err.message;
-                alert(isSignup ? `Registration failed: ${errorMessage}` : `Login failed: ${errorMessage}`);
-            });
+
+        try {
+            if (isSignup) {
+
+                await createUserWithEmailAndPassword(
+                    auth,
+                    formData.username,
+                    formData.password
+                );
+
+                alert("🎉 Account created successfully!");
+                setIsSignup(false);
+
+            } else {
+
+                await signInWithEmailAndPassword(
+                    auth,
+                    formData.username,
+                    formData.password
+                );
+
+                localStorage.setItem("token", "loggedin");
+                localStorage.setItem("username", formData.username);
+
+                window.location.href = "/";
+
+            }
+
+        } catch (error) {
+
+            alert(error.message);
+
+        }
     };
 
     return (
@@ -68,8 +89,8 @@ const Login = () => {
             >
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
                     <FormInput
-                        label="Username"
-                        placeholder="Enter your username"
+                        label="Email"
+                        placeholder="Enter your email"
                         value={formData.username}
                         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                         required

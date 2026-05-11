@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import {
+    addDoc,
+    collection
+} from "firebase/firestore";
+
+import { db } from "../firebase";
 import FormInput from '../components/FormInput';
 import { AlertTriangle, MapPin, ClipboardList } from 'lucide-react';
 
@@ -7,21 +12,40 @@ const AccidentReporting = () => {
     const [formData, setFormData] = useState({ petType: '', location: '', description: '' });
     const [reported, setReported] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
+
         e.preventDefault();
-        axios.post('http://localhost:5000/accidents', formData)
-            .then(() => {
-                setReported(true);
-                setFormData({ petType: '', location: '', description: '' });
-            })
-            .catch(err => console.error(err));
+
+        try {
+
+            await addDoc(collection(db, "accidents"), {
+                ...formData,
+                username: localStorage.getItem("username"),
+                createdAt: new Date()
+            });
+
+            setReported(true);
+
+            setFormData({
+                petType: '',
+                location: '',
+                description: ''
+            });
+
+        } catch (error) {
+
+            console.error(error);
+            alert(error.message);
+
+        }
+
     };
 
     return (
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div style={{ textAlign: 'center' }}>
                 <h1 style={{ fontSize: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-                    <AlertTriangle color="var(--accent)" /> Emergency Reporting
+                    <AlertTriangle color='red' /> Emergency Reporting
                 </h1>
                 <p style={{ color: 'var(--glass-text)', marginTop: '0.5rem' }}>Report pet-related accidents to alert local authorities and community members.</p>
             </div>
@@ -47,7 +71,7 @@ const AccidentReporting = () => {
                                 style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', padding: '1rem', borderRadius: '12px', color: 'var(--input-color)', minHeight: '120px', outline: 'none', fontFamily: "'Nunito', sans-serif" }}
                             />
                         </div>
-                        <button className="btn-primary" type="submit" style={{ padding: '1rem', marginTop: '1rem', background: 'var(--accent)' }}>Send Urgent Alert</button>
+                        <button className="btn-primary" type="submit" style={{ padding: '1rem', marginTop: '1rem', background: 'linear gradient(135deg, #FF416C, #FF4B2B)' }}>Send Urgent Alert</button>
                     </form>
                 )}
             </div>

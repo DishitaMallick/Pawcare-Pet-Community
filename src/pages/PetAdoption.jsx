@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import {
+    collection,
+    getDocs,
+    addDoc
+} from "firebase/firestore";
+
+import { db } from "../firebase";
 import PetCard from '../components/PetCard';
 import { Search, Filter } from 'lucide-react';
 
@@ -8,22 +14,65 @@ const PetAdoption = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Fetch pets from backend
-        axios.get('http://localhost:5000/pets')
-            .then(res => {
-                setPets(res.data);
+
+        const fetchPets = async () => {
+
+            try {
+
+                const querySnapshot =
+                    await getDocs(
+                        collection(db, "adoptpets")
+                    );
+
+                const petsData =
+                    querySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+
+                if (petsData.length === 0) {
+
+                    setPets([
+                        {
+                            id: 1,
+                            name: 'Buddy',
+                            type: 'Dog',
+                            age: 3
+                        },
+                        {
+                            id: 2,
+                            name: 'Misty',
+                            type: 'Cat',
+                            age: 2
+                        },
+                        {
+                            id: 3,
+                            name: 'Goldie',
+                            type: 'Dog',
+                            age: 1
+                        }
+                    ]);
+
+                } else {
+
+                    setPets(petsData);
+
+                }
+
                 setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
+
+            } catch (error) {
+
+                console.error(error);
+
                 setLoading(false);
-                // Fallback dummy data if backend is not yet seeded
-                setPets([
-                    { id: 1, name: 'Buddy', type: 'Dog', age: 3 },
-                    { id: 2, name: 'Misty', type: 'Cat', age: 2 },
-                    { id: 3, name: 'Goldie', type: 'Dog', age: 1 }
-                ]);
-            });
+
+            }
+
+        };
+
+        fetchPets();
+
     }, []);
 
     return (

@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import {
+    addDoc,
+    collection
+} from "firebase/firestore";
+
+import { db } from "../firebase";
 import FormInput from '../components/FormInput';
 import { Calendar, Syringe, MapPin, CheckCircle } from 'lucide-react';
 
@@ -7,15 +12,34 @@ const VaccinationBooking = () => {
     const [formData, setFormData] = useState({ ownerName: '', petName: '', clinic: '', date: '' });
     const [success, setSuccess] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
+
         e.preventDefault();
-        const username = localStorage.getItem('username');
-        axios.post('http://localhost:5000/bookings', { ...formData, username })
-            .then(() => {
-                setSuccess(true);
-                setFormData({ ownerName: '', petName: '', clinic: '', date: '' });
-            })
-            .catch(err => console.error(err));
+
+        try {
+
+            await addDoc(collection(db, "consultations"), {
+                ...formData,
+                username: localStorage.getItem("username"),
+                createdAt: new Date()
+            });
+
+            alert("📅 Consultation booked!");
+
+            setFormData({
+                name: "",
+                petType: "",
+                phone: "",
+                date: ""
+            });
+
+        } catch (error) {
+
+            console.error(error);
+            alert(error.message);
+
+        }
+
     };
 
     if (success) {
