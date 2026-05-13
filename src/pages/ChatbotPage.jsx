@@ -1,20 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, PawPrint } from 'lucide-react';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-const Chatbot = ({ triggerAction }) => {
+const Chatbot = () => {
     const [messages, setMessages] = useState([
         {
             role: 'bot',
             text:
-                "🐾 Hi! I'm PawBot.\nAsk me anything about pet care, health, grooming, food, or emergencies!"
+                "🐾 Hi! I'm PawBot. Ask me about pet food, grooming, vaccines, emergencies, dogs, cats, or training!"
         }
     ]);
 
     const [input, setInput] = useState('');
-    const [loading, setLoading] = useState(false);
-
     const chatEndRef = useRef(null);
 
     useEffect(() => {
@@ -23,85 +19,86 @@ const Chatbot = ({ triggerAction }) => {
         });
     }, [messages]);
 
-    useEffect(() => {
-        if (triggerAction) {
-            sendMessage(triggerAction);
+    const getBotReply = (message) => {
+        const text = message.toLowerCase();
+
+        if (
+            text.includes('hi') ||
+            text.includes('hello') ||
+            text.includes('hey')
+        ) {
+            return '🐶 Hello! How can I help your pet today?';
         }
-    }, [triggerAction]);
 
-    const sendMessage = async (customText) => {
-        const text = customText || input;
+        if (
+            text.includes('food') ||
+            text.includes('eat') ||
+            text.includes('diet')
+        ) {
+            return '🍖 Give pets balanced meals with proteins, healthy fats, and fresh water. Avoid chocolate, onions, and grapes.';
+        }
 
-        if (!text.trim()) return;
+        if (
+            text.includes('vaccine') ||
+            text.includes('vaccination')
+        ) {
+            return '💉 Pets need vaccinations to stay protected from diseases. Visit a vet regularly.';
+        }
+
+        if (
+            text.includes('groom') ||
+            text.includes('bath') ||
+            text.includes('hair')
+        ) {
+            return '🛁 Regular grooming keeps pets healthy and clean. Use pet-safe shampoo only.';
+        }
+
+        if (
+            text.includes('emergency') ||
+            text.includes('injury') ||
+            text.includes('bleeding')
+        ) {
+            return '🚨 Please contact a veterinarian immediately if your pet is seriously injured.';
+        }
+
+        if (text.includes('dog')) {
+            return '🐕 Dogs need exercise, clean water, healthy food and lots of love.';
+        }
+
+        if (text.includes('cat')) {
+            return '🐈 Cats love clean litter boxes, quiet spaces and proper hydration.';
+        }
+
+        if (
+            text.includes('train') ||
+            text.includes('training')
+        ) {
+            return '🎾 Positive reinforcement and rewards are best for training pets.';
+        }
+
+        return '🐾 I can help with food, grooming, vaccines, emergencies, dogs, cats and training!';
+    };
+
+    const sendMessage = () => {
+        if (!input.trim()) return;
 
         const userMessage = {
             role: 'user',
-            text
+            text: input
         };
 
-        setMessages(prev => [...prev, userMessage]);
+        const botMessage = {
+            role: 'bot',
+            text: getBotReply(input)
+        };
+
+        setMessages((prev) => [
+            ...prev,
+            userMessage,
+            botMessage
+        ]);
 
         setInput('');
-        setLoading(true);
-
-        try {
-            const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [
-                            {
-                                role: 'user',
-                                parts: [
-                                    {
-                                        text: text
-                                    }
-                                ]
-                            }
-                        ]
-                    }),
-                }
-            );
-
-            const data = await response.json();
-
-            console.log(data);
-
-            if (data.error) {
-                throw new Error(data.error.message);
-            }
-
-            const botReply =
-                data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-            setMessages(prev => [
-                ...prev,
-                {
-                    role: 'bot',
-                    text:
-                        botReply ||
-                        '⚠️ Gemini returned an empty response.'
-                }
-            ]);
-        }
-
-        catch (error) {
-            console.log(error);
-
-            setMessages(prev => [
-                ...prev,
-                {
-                    role: 'bot',
-                    text: `⚠️ ${error.message}`
-                }
-            ]);
-        }
-
-        setLoading(false);
     };
 
     const handleKeyDown = (e) => {
@@ -123,7 +120,6 @@ const Chatbot = ({ triggerAction }) => {
                 boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
             }}
         >
-
             {/* HEADER */}
             <div
                 style={{
@@ -145,8 +141,7 @@ const Chatbot = ({ triggerAction }) => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#fff',
-                        boxShadow: '0 4px 12px rgba(255,107,107,0.3)'
+                        color: '#fff'
                     }}
                 >
                     <PawPrint size={20} />
@@ -172,7 +167,7 @@ const Chatbot = ({ triggerAction }) => {
                             fontWeight: 600
                         }}
                     >
-                        ● Online AI Assistant
+                        ● Offline Assistant
                     </p>
                 </div>
             </div>
@@ -185,9 +180,7 @@ const Chatbot = ({ triggerAction }) => {
                     padding: '1.2rem',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '1rem',
-                    background:
-                        'linear-gradient(to bottom, #fff, rgba(255,248,248,0.6))'
+                    gap: '1rem'
                 }}
             >
                 {messages.map((msg, i) => (
@@ -209,25 +202,16 @@ const Chatbot = ({ triggerAction }) => {
                                     msg.role === 'user'
                                         ? '18px 18px 4px 18px'
                                         : '18px 18px 18px 4px',
-
                                 background:
                                     msg.role === 'user'
                                         ? '#FF6B6B'
                                         : '#f4f4f4',
-
                                 color:
                                     msg.role === 'user'
                                         ? '#ffffff'
                                         : '#222222',
-
                                 lineHeight: 1.6,
-                                fontSize: '0.92rem',
-                                whiteSpace: 'pre-wrap',
-
-                                boxShadow:
-                                    msg.role === 'user'
-                                        ? '0 6px 16px rgba(255,107,107,0.25)'
-                                        : '0 4px 10px rgba(0,0,0,0.04)'
+                                fontSize: '0.92rem'
                             }}
                         >
                             {msg.text}
@@ -235,18 +219,7 @@ const Chatbot = ({ triggerAction }) => {
                     </div>
                 ))}
 
-                {loading && (
-                    <div
-                        style={{
-                            color: '#777',
-                            fontSize: '0.9rem'
-                        }}
-                    >
-                        PawBot is typing...
-                    </div>
-                )}
-
-                <div ref={chatEndRef} />
+                <div ref={chatEndRef}></div>
             </div>
 
             {/* INPUT */}
@@ -267,7 +240,9 @@ const Chatbot = ({ triggerAction }) => {
                     <input
                         type="text"
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
+                        onChange={(e) =>
+                            setInput(e.target.value)
+                        }
                         onKeyDown={handleKeyDown}
                         placeholder="Ask PawBot anything..."
                         style={{
@@ -277,33 +252,24 @@ const Chatbot = ({ triggerAction }) => {
                             border:
                                 '1px solid rgba(255,107,107,0.15)',
                             outline: 'none',
-                            fontSize: '0.92rem',
-                            background: '#fff',
-                            color: '#222'
+                            fontSize: '0.92rem'
                         }}
                     />
 
                     <button
-                        onClick={() => sendMessage()}
-                        disabled={loading}
+                        onClick={sendMessage}
                         style={{
                             width: '52px',
                             height: '52px',
                             borderRadius: '16px',
                             border: 'none',
                             background:
-                                loading
-                                    ? '#ffb3b3'
-                                    : 'linear-gradient(135deg,#FF6B6B,#FF8B94)',
-
+                                'linear-gradient(135deg,#FF6B6B,#FF8B94)',
                             color: '#fff',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: '0.3s ease',
-                            boxShadow:
-                                '0 6px 16px rgba(255,107,107,0.25)'
+                            justifyContent: 'center'
                         }}
                     >
                         <Send size={18} />
