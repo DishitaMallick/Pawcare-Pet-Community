@@ -4,14 +4,13 @@ import {
     Home,
     Dog,
     MapPin,
-    Calendar,
     MessageSquare,
     Briefcase,
-    Sun,
-    Moon,
     Search,
     User,
-    AlertTriangle
+    AlertTriangle,
+    Menu,
+    X
 } from 'lucide-react';
 const PawLogo = () => (
     <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -48,6 +47,7 @@ const Navbar = () => {
     const token = localStorage.getItem('token');
     const [isLightMode, setIsLightMode] = useState(() => localStorage.getItem('theme') === 'light-mode');
     const [scrolled, setScrolled] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         if (isLightMode) {
@@ -124,21 +124,37 @@ const Navbar = () => {
             </div>
 
             {/* Nav Links */}
-            <div style={{ display: 'flex', gap: '0.2rem', alignItems: 'center' }}>
+            {/* Desktop Nav */}
+            <div
+                style={{
+                    display: window.innerWidth > 900 ? 'flex' : 'none',
+                    gap: '0.2rem',
+                    alignItems: 'center'
+                }}
+            >
                 {navItems.map(({ to, icon: Icon, label }) => (
                     <NavLink
                         key={to}
                         to={to}
-                        className="nav-link"
                         style={({ isActive }) => ({
                             padding: '0.5rem 0.75rem',
                             borderRadius: '12px',
                             fontSize: '0.88rem',
                             fontWeight: 700,
                             transition: 'all 0.2s ease',
-                            background: isActive ? 'linear-gradient(135deg, rgba(255,107,107,0.2), rgba(255,139,148,0.1))' : 'transparent',
-                            color: isActive ? '#FF6B6B' : 'rgba(255,255,255,0.75)',
-                            border: isActive ? '1px solid rgba(255,107,107,0.3)' : '1px solid transparent',
+                            background: isActive
+                                ? 'linear-gradient(135deg, rgba(255,107,107,0.2), rgba(255,139,148,0.1))'
+                                : 'transparent',
+                            color: isActive
+                                ? '#FF6B6B'
+                                : 'rgba(255,255,255,0.75)',
+                            border: isActive
+                                ? '1px solid rgba(255,107,107,0.3)'
+                                : '1px solid transparent',
+                            textDecoration: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.4rem'
                         })}
                     >
                         <Icon size={16} />
@@ -146,6 +162,20 @@ const Navbar = () => {
                     </NavLink>
                 ))}
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                style={{
+                    display: window.innerWidth <= 900 ? 'flex' : 'none',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#fff',
+                    cursor: 'pointer'
+                }}
+            >
+                {menuOpen ? <X size={26} /> : <Menu size={26} />}
+            </button>
 
             {/* Right side */}
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -197,6 +227,49 @@ const Navbar = () => {
                     </button>
                 )}
             </div>
+            {/* Mobile Dropdown */}
+            {
+                menuOpen && window.innerWidth <= 900 && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            right: 0,
+                            marginTop: '0.8rem',
+                            background: 'rgba(26,26,46,0.98)',
+                            borderRadius: '18px',
+                            padding: '1rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.8rem',
+                            border: '1px solid rgba(255,107,107,0.15)',
+                            backdropFilter: 'blur(20px)'
+                        }}
+                    >
+                        {navItems.map(({ to, icon: Icon, label }) => (
+                            <NavLink
+                                key={to}
+                                to={to}
+                                onClick={() => setMenuOpen(false)}
+                                style={{
+                                    color: '#fff',
+                                    textDecoration: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.8rem',
+                                    padding: '0.8rem',
+                                    borderRadius: '12px',
+                                    background: 'rgba(255,255,255,0.03)'
+                                }}
+                            >
+                                <Icon size={18} />
+                                {label}
+                            </NavLink>
+                        ))}
+                    </div>
+                )
+            }
         </nav>
     );
 };
