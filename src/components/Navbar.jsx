@@ -7,259 +7,309 @@ import {
     MessageSquare,
     Briefcase,
     Search,
+    User,
     AlertTriangle,
     Menu,
     X
 } from 'lucide-react';
+const PawLogo = () => (
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Main paw pad */}
+        <ellipse cx="18" cy="22" rx="10" ry="8" fill="url(#pawGrad)" />
+        {/* Top paw toes */}
+        <ellipse cx="10" cy="13" rx="3.5" ry="4.5" fill="url(#pawGrad)" />
+        <ellipse cx="18" cy="11" rx="3.5" ry="4.5" fill="url(#pawGrad)" />
+        <ellipse cx="26" cy="13" rx="3.5" ry="4.5" fill="url(#pawGrad)" />
+        {/* Small inner dots on main pad */}
+        <circle cx="14" cy="22" r="2" fill="rgba(255,255,255,0.3)" />
+        <circle cx="21" cy="22" r="2" fill="rgba(255,255,255,0.3)" />
+        <circle cx="17.5" cy="27" r="2" fill="rgba(255,255,255,0.3)" />
+        <defs>
+            <linearGradient id="pawGrad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#FF6B6B" />
+                <stop offset="100%" stopColor="#FF8B94" />
+            </linearGradient>
+        </defs>
+    </svg>
+);
 
 const navItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/adopt', icon: Dog, label: 'Adopt' },
     { to: '/lost-found', icon: Search, label: 'Lost & Found' },
+    { to: '/map', icon: MapPin, label: 'Map' },
     { to: '/services', icon: Briefcase, label: 'Services' },
     { to: '/chatbot', icon: MessageSquare, label: 'PawBot' },
-    { to: '/accidents', icon: AlertTriangle, label: 'Emergency' }
-];
+    { to: '/accidents', icon: AlertTriangle, label: 'Emergency' },];
 
 const Navbar = () => {
     const navigate = useNavigate();
-
+    const token = localStorage.getItem('token');
+    const [isLightMode, setIsLightMode] = useState(() => localStorage.getItem('theme') === 'light-mode');
+    const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const [isMobile, setIsMobile] = useState(
-        window.innerWidth <= 768
-    );
+    useEffect(() => {
+        if (isLightMode) {
+            document.body.classList.add('light-mode');
+            localStorage.setItem('theme', 'light-mode');
+        } else {
+            document.body.classList.remove('light-mode');
+            localStorage.setItem('theme', 'dark-mode');
+        }
+    }, [isLightMode]);
 
     useEffect(() => {
-        const handleResize = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        window.addEventListener('resize', handleResize);
-
-        return () =>
-            window.removeEventListener(
-                'resize',
-                handleResize
-            );
+        const handleScroll = () => setScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        navigate('/');
+    };
+
     return (
-        <nav
-            style={{
-                margin: isMobile
-                    ? '0.5rem'
-                    : '0.75rem 1rem',
-
-                padding: isMobile
-                    ? '0.7rem 1rem'
-                    : '0.9rem 1.5rem',
-
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-
-                position: 'sticky',
-                top: '0.5rem',
-                zIndex: 1000,
-
-                background: 'rgba(26,26,46,0.92)',
-
-                backdropFilter: 'blur(20px)',
-
-                border:
-                    '1px solid rgba(255,107,107,0.12)',
-
-                borderRadius: '18px'
-            }}
-        >
-            {/* LOGO */}
+        <nav style={{
+            margin: '0.75rem 1rem',
+            padding: '0.75rem 1.5rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            position: 'sticky',
+            top: '0.75rem',
+            zIndex: 1000,
+            background: scrolled ? 'rgba(26, 26, 46, 0.95)' : 'rgba(26, 26, 46, 0.75)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,107,107,0.15)',
+            borderRadius: '20px',
+            boxShadow: scrolled ? '0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,107,107,0.1)' : '0 4px 24px rgba(0,0,0,0.2)',
+            transition: 'all 0.3s ease'
+        }}>
+            {/* Logo */}
             <div
+                style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}
                 onClick={() => navigate('/')}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    cursor: 'pointer'
-                }}
             >
-                <div
-                    style={{
-                        width: isMobile ? '34px' : '44px',
-                        height: isMobile ? '34px' : '44px',
-
-                        borderRadius: '12px',
-
-                        background:
-                            'linear-gradient(135deg, rgba(255,107,107,0.2), rgba(255,139,148,0.1))',
-
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-
-                        color: '#FF6B6B',
-
-                        fontSize: isMobile
-                            ? '1rem'
-                            : '1.3rem'
-                    }}
-                >
-                    🐾
+                <div style={{
+                    width: '44px', height: '44px',
+                    borderRadius: '14px',
+                    background: 'linear-gradient(135deg, rgba(255,107,107,0.2), rgba(255,139,148,0.1))',
+                    border: '1px solid rgba(255,107,107,0.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    animation: 'pawBounce 3s ease-in-out infinite'
+                }}>
+                    <PawLogo />
                 </div>
-
                 <div>
-                    <div
-                        style={{
-                            fontSize: isMobile
-                                ? '1rem'
-                                : '1.4rem',
-
-                            fontWeight: 800,
-
-                            color: '#FF6B6B'
-                        }}
-                    >
+                    <span style={{
+                        fontSize: '1.4rem',
+                        fontWeight: 900,
+                        fontFamily: "'Fredoka One', cursive",
+                        background: 'linear-gradient(135deg, #FF6B6B, #4ECDC4)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        letterSpacing: '0.5px'
+                    }}>
                         PawCare
+                    </span>
+                    <div style={{ fontSize: '0.6rem', color: 'rgba(255,107,107,0.7)', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', marginTop: '-2px' }}>
+                        Pet Community
                     </div>
-
-                    {!isMobile && (
-                        <div
-                            style={{
-                                fontSize: '0.65rem',
-                                color: '#aaa'
-                            }}
-                        >
-                            Pet Community
-                        </div>
-                    )}
                 </div>
             </div>
 
-            {/* DESKTOP NAV */}
-            {!isMobile && (
-                <div
-                    style={{
-                        display: 'flex',
-                        gap: '0.3rem',
-                        alignItems: 'center'
-                    }}
-                >
-                    {navItems.map(
-                        ({ to, icon: Icon, label }) => (
+            {/* Nav Links */}
+            {/* Desktop Nav */}
+            <div
+                style={{
+                    display: window.innerWidth > 900 ? 'flex' : 'none',
+                    gap: '0.2rem',
+                    alignItems: 'center'
+                }}
+            >
+                {navItems.map(({ to, icon: Icon, label }) => (
+                    <NavLink
+                        key={to}
+                        to={to}
+                        style={({ isActive }) => ({
+                            padding: '0.5rem 0.75rem',
+                            borderRadius: '12px',
+                            fontSize: '0.88rem',
+                            fontWeight: 700,
+                            transition: 'all 0.2s ease',
+                            background: isActive
+                                ? 'linear-gradient(135deg, rgba(255,107,107,0.2), rgba(255,139,148,0.1))'
+                                : 'transparent',
+                            color: isActive
+                                ? '#FF6B6B'
+                                : 'rgba(255,255,255,0.75)',
+                            border: isActive
+                                ? '1px solid rgba(255,107,107,0.3)'
+                                : '1px solid transparent',
+                            textDecoration: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.4rem'
+                        })}
+                    >
+                        <Icon size={16} />
+                        {label}
+                    </NavLink>
+                ))}
+            </div>
+
+            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button */}
+            <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                style={{
+                    display: window.innerWidth <= 900 ? 'flex' : 'none',
+
+                    background: 'rgba(255,255,255,0.04)',
+
+                    border: '1px solid rgba(255,107,107,0.15)',
+
+                    width: '42px',
+                    height: '42px',
+
+                    borderRadius: '12px',
+
+                    alignItems: 'center',
+                    justifyContent: 'center',
+
+                    color: '#fff',
+
+                    cursor: 'pointer',
+
+                    backdropFilter: 'blur(10px)'
+                }}
+            >
+                {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+
+            {/* Right side */}
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+
+
+                {token ? (
+                    <>
+                        <button
+                            onClick={() => navigate('/profile')}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                                background: 'rgba(255,230,109,0.1)', border: '1px solid rgba(255,230,109,0.3)',
+                                padding: '0.5rem 1rem', borderRadius: '12px',
+                                color: '#FFE66D', fontWeight: 700, cursor: 'pointer', fontSize: '0.85rem',
+                                fontFamily: "'Nunito', sans-serif", transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,230,109,0.2)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,230,109,0.1)'}
+                        >
+                            <User size={15} /> My Profile
+                        </button>
+                        <button
+                            onClick={handleLogout}
+                            style={{
+                                background: 'linear-gradient(135deg, rgba(78,205,196,0.2), rgba(168,230,207,0.1))',
+                                border: '1px solid rgba(78,205,196,0.4)',
+                                padding: '0.5rem 1.2rem',
+                                borderRadius: '12px',
+                                color: '#4ECDC4',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                fontSize: '0.88rem',
+                                transition: 'all 0.3s ease',
+                                fontFamily: "'Nunito', sans-serif"
+                            }}
+                            onMouseEnter={e => e.target.style.background = 'rgba(78,205,196,0.3)'}
+                            onMouseLeave={e => e.target.style.background = 'linear-gradient(135deg, rgba(78,205,196,0.2), rgba(168,230,207,0.1))'}
+                        >
+                            Log Out
+                        </button>
+                    </>
+                ) : (
+                    <button
+                        className="btn-primary"
+                        onClick={() => navigate('/login')}
+                        style={{ padding: '0.5rem 1.2rem', fontSize: '0.88rem', borderRadius: '12px' }}
+                    >
+                        🐾 Get Started
+                    </button>
+                )}
+            </div>
+            {/* Mobile Dropdown */}
+            {
+                menuOpen && window.innerWidth <= 900 && (
+                    <div
+                        style={{
+                            position: 'fixed',
+
+                            top: '85px',
+                            left: '0.7rem',
+                            right: '0.7rem',
+
+                            background: 'rgba(26,26,46,0.98)',
+
+                            borderRadius: '20px',
+
+                            padding: '1rem',
+
+                            display: 'flex',
+                            flexDirection: 'column',
+
+                            gap: '0.8rem',
+
+                            border:
+                                '1px solid rgba(255,107,107,0.15)',
+
+                            backdropFilter: 'blur(20px)',
+
+                            boxShadow:
+                                '0 12px 35px rgba(0,0,0,0.35)',
+
+                            zIndex: 2000
+                        }}
+                    >
+                        {navItems.map(({ to, icon: Icon, label }) => (
                             <NavLink
                                 key={to}
                                 to={to}
-                                style={({ isActive }) => ({
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.4rem',
-
-                                    padding: '0.55rem 0.8rem',
-
-                                    borderRadius: '12px',
-
-                                    textDecoration: 'none',
-
-                                    color: isActive
-                                        ? '#FF6B6B'
-                                        : '#fff',
-
-                                    background: isActive
-                                        ? 'rgba(255,107,107,0.12)'
-                                        : 'transparent',
-
-                                    fontSize: '0.9rem'
-                                })}
-                            >
-                                <Icon size={16} />
-                                {label}
-                            </NavLink>
-                        )
-                    )}
-                </div>
-            )}
-
-            {/* HAMBURGER */}
-            {isMobile && (
-                <button
-                    onClick={() =>
-                        setMenuOpen(!menuOpen)
-                    }
-                    style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#fff',
-                        cursor: 'pointer'
-                    }}
-                >
-                    {menuOpen ? (
-                        <X size={24} />
-                    ) : (
-                        <Menu size={24} />
-                    )}
-                </button>
-            )}
-
-            {/* MOBILE MENU */}
-            {menuOpen && isMobile && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '100%',
-                        left: 0,
-                        right: 0,
-
-                        marginTop: '0.5rem',
-
-                        background:
-                            'rgba(26,26,46,0.98)',
-
-                        borderRadius: '18px',
-
-                        padding: '1rem',
-
-                        display: 'flex',
-                        flexDirection: 'column',
-
-                        gap: '0.7rem',
-
-                        border:
-                            '1px solid rgba(255,107,107,0.12)'
-                    }}
-                >
-                    {navItems.map(
-                        ({ to, icon: Icon, label }) => (
-                            <NavLink
-                                key={to}
-                                to={to}
-                                onClick={() =>
-                                    setMenuOpen(false)
-                                }
+                                onClick={() => setMenuOpen(false)}
                                 style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-
-                                    gap: '0.8rem',
-
-                                    padding: '0.8rem',
-
-                                    borderRadius: '12px',
-
-                                    textDecoration: 'none',
-
                                     color: '#fff',
 
+                                    textDecoration: 'none',
+
+                                    display: 'flex',
+
+                                    alignItems: 'center',
+
+                                    gap: '0.9rem',
+
+                                    padding: '0.9rem',
+
+                                    borderRadius: '14px',
+
                                     background:
-                                        'rgba(255,255,255,0.04)'
+                                        'rgba(255,255,255,0.04)',
+
+                                    fontWeight: 600,
+
+                                    transition: '0.2s ease'
                                 }}
                             >
                                 <Icon size={18} />
                                 {label}
                             </NavLink>
-                        )
-                    )}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )
+            }
         </nav>
     );
 };
