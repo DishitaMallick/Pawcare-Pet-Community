@@ -93,8 +93,20 @@ const LostAndFound = () => {
 
     };
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', alignItems: 'start' }}>
-            <div className="glass-card" style={{ padding: '2.5rem' }}>
+        <div
+            style={{
+                display: 'grid',
+
+                gridTemplateColumns:
+                    window.innerWidth <= 768
+                        ? '1fr'
+                        : '1fr 1fr',
+
+                gap: '3rem',
+
+                alignItems: 'start'
+            }}
+        >            <div className="glass-card" style={{ padding: '2.5rem' }}>
                 <h2 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <AlertCircle color="var(--accent)" /> Report a Lost Pet
                 </h2>
